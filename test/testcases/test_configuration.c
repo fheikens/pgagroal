@@ -172,3 +172,93 @@ cleanup:
    free(str);
    MCTF_FINISH();
 }
+
+static struct main_configuration*
+create_minimal_valid_config(void)
+{
+   struct main_configuration* config;
+
+   config = (struct main_configuration*)calloc(1, sizeof(struct main_configuration));
+   if (config == NULL)
+   {
+      return NULL;
+   }
+
+   memcpy(config->common.host, "localhost", 9);
+   config->common.port = 5432;
+   memcpy(config->unix_socket_dir, "/tmp", 4);
+   config->max_connections = 100;
+   config->rotate_frontend_password_length = 8;
+
+   config->number_of_servers = 1;
+   memcpy(config->servers[0].host, "localhost", 9);
+   config->servers[0].port = 5432;
+
+   return config;
+}
+
+MCTF_TEST(test_validation_authquery_requires_superuser)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->authquery = true;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "auth_query without superuser should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_authquery_rejects_users)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->authquery = true;
+   memcpy(config->superuser.username, "su", 2);
+   config->number_of_users = 1;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "auth_query with users should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_authquery_rejects_frontend_users)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->authquery = true;
+   memcpy(config->superuser.username, "su", 2);
+   config->number_of_frontend_users = 1;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "auth_query with frontend users should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_authquery_rejects_limits)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->authquery = true;
+   memcpy(config->superuser.username, "su", 2);
+   config->number_of_limits = 1;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "auth_query with limits should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
