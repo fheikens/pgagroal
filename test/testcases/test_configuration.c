@@ -172,3 +172,104 @@ cleanup:
    free(str);
    MCTF_FINISH();
 }
+
+/*
+ * Helper to create a minimal valid configuration for validation tests.
+ * Caller must free the returned pointer.
+ */
+static struct main_configuration*
+create_minimal_valid_config(void)
+{
+   struct main_configuration* config;
+
+   config = (struct main_configuration*)calloc(1, sizeof(struct main_configuration));
+   if (config == NULL)
+   {
+      return NULL;
+   }
+
+   memcpy(config->common.host, "localhost", 9);
+   config->common.port = 5432;
+   memcpy(config->unix_socket_dir, "/tmp", 4);
+   config->max_connections = 100;
+   config->rotate_frontend_password_length = 8;
+
+   config->number_of_servers = 1;
+   memcpy(config->servers[0].host, "localhost", 9);
+   config->servers[0].port = 5432;
+
+   return config;
+}
+
+MCTF_TEST(test_validation_minimal_valid_config)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 0, cleanup, "minimal valid config should pass validation");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_reject_missing_host)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   memset(config->common.host, 0, sizeof(config->common.host));
+
+   int ret = pgagroal_validate_configuration(config, true, false);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "missing host should fail validation");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_reject_missing_port)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->common.port = 0;
+
+   int ret = pgagroal_validate_configuration(config, true, false);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "missing port should fail validation");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_reject_max_connections_zero)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->max_connections = 0;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "max_connections=0 should fail validation");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_reject_no_servers)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->number_of_servers = 0;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "no servers should fail validation");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
