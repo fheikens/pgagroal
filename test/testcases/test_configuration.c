@@ -28,6 +28,7 @@
  */
 #include <pgagroal.h>
 #include <configuration.h>
+#include <pipeline.h>
 #include <tscommon.h>
 #include <mctf.h>
 #include <utils.h>
@@ -170,5 +171,100 @@ MCTF_TEST(test_configuration_time_format_output)
 
 cleanup:
    free(str);
+   MCTF_FINISH();
+}
+
+static struct main_configuration*
+create_minimal_valid_config(void)
+{
+   struct main_configuration* config;
+
+   config = (struct main_configuration*)calloc(1, sizeof(struct main_configuration));
+   if (config == NULL)
+   {
+      return NULL;
+   }
+
+   memcpy(config->common.host, "localhost", 9);
+   config->common.port = 5432;
+   memcpy(config->unix_socket_dir, "/tmp", 4);
+   config->max_connections = 100;
+   config->rotate_frontend_password_length = 8;
+
+   config->number_of_servers = 1;
+   memcpy(config->servers[0].host, "localhost", 9);
+   config->servers[0].port = 5432;
+
+   return config;
+}
+
+MCTF_TEST(test_validation_performance_rejects_failover)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->pipeline = PIPELINE_PERFORMANCE;
+   config->failover = true;
+
+   // Add second server required by failover validation
+   config->number_of_servers = 2;
+   memcpy(config->servers[1].host, "replica", 7);
+   config->servers[1].port = 5433;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "performance + failover should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_performance_rejects_disconnect_client)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->pipeline = PIPELINE_PERFORMANCE;
+   config->disconnect_client = 60;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "performance + disconnect_client should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_transaction_rejects_disconnect_client)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->pipeline = PIPELINE_TRANSACTION;
+   config->disconnect_client = 60;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "transaction + disconnect_client should fail");
+
+cleanup:
+   free(config);
+   MCTF_FINISH();
+}
+
+MCTF_TEST(test_validation_transaction_requires_limits)
+{
+   struct main_configuration* config = create_minimal_valid_config();
+   MCTF_ASSERT_PTR_NONNULL(config, cleanup, "alloc failed");
+
+   config->pipeline = PIPELINE_TRANSACTION;
+   config->number_of_users = 1;
+   config->allow_unknown_users = false;
+   config->number_of_limits = 0;
+
+   int ret = pgagroal_validate_configuration(config, true, true);
+   MCTF_ASSERT_INT_EQ(ret, 1, cleanup, "transaction without limits should fail");
+
+cleanup:
+   free(config);
    MCTF_FINISH();
 }
