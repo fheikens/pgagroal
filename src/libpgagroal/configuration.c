@@ -814,6 +814,11 @@ pgagroal_validate_configuration(void* shm, bool has_unix_socket, bool has_main_s
       }
    }
 
+   if (config->console > 0 && config->common.metrics == 0)
+   {
+      pgagroal_log_warn("pgagroal: console requires metrics to be enabled");
+   }
+
    if (config->ev_backend == PGAGROAL_EVENT_BACKEND_INVALID)
    {
       pgagroal_log_warn("Configured event backend is invalid. Default to 'auto'");
