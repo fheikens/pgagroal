@@ -62,6 +62,20 @@ See [Architecture](./doc/ARCHITECTURE.md) for the architecture of [**pgagroal**]
 * PostgreSQL 17
 * PostgreSQL 18
 
+## Quick start (container)
+
+```bash
+docker run -d \
+  -p 6432:2345 \   # pgagroal connection port (client → pooler)
+  -p 9100:2346 \   # Prometheus metrics endpoint
+  elevarq/pgagroal:2.1.0
+```
+
+* `6432`: port for database clients connecting through pgagroal
+* `9100`: HTTP endpoint exposing metrics for monitoring
+
+Use a version tag such as `2.1.0` for reproducible deployments.
+
 ## Container notes
 
 For containerized deployments, set `ev_backend = epoll` in `pgagroal.conf`.
@@ -69,11 +83,6 @@ The default (`auto`) selects `io_uring`, which may not work in Docker Desktop
 due to kernel security restrictions.
 
 See [Docker](./doc/manual/en/13-docker.md) for full container setup instructions.
-
-## Versioning
-
-Use version tags (e.g. `elevarq/pgagroal:2.1.0`) for reproducible deployments.
-The `:latest` tag is mutable and should not be used in production.
 
 
 ## Compiling from sources
