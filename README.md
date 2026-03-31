@@ -54,6 +54,27 @@ See [Architecture](./doc/ARCHITECTURE.md) for the architecture of [**pgagroal**]
 * [FreeBSD](https://www.freebsd.org/)
 * [OpenBSD](http://www.openbsd.org/)
 
+## Tested with
+
+* PostgreSQL 14
+* PostgreSQL 15
+* PostgreSQL 16
+* PostgreSQL 17
+* PostgreSQL 18
+
+## Container notes
+
+For containerized deployments, set `ev_backend = epoll` in `pgagroal.conf`.
+The default (`auto`) selects `io_uring`, which may not work in Docker Desktop
+due to kernel security restrictions.
+
+See [Docker](./doc/manual/en/13-docker.md) for full container setup instructions.
+
+## Versioning
+
+Use version tags (e.g. `elevarq/pgagroal:2.1.0`) for reproducible deployments.
+The `:latest` tag is mutable and should not be used in production.
+
 
 ## Compiling from sources
 
