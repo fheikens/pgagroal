@@ -72,26 +72,26 @@ There are two Dockerfiles available:
 
 **Using Docker**
 ```sh
-docker build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.alpine .
+docker build -t pgagroal:2.1.1 -f ./contrib/docker/Dockerfile.alpine .
 ```
 
 **Using Podman**
 
 ```sh
-podman build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.alpine .
+podman build -t pgagroal:2.1.1 -f ./contrib/docker/Dockerfile.alpine .
 ```
 
 2. **Rocky Linux 9-based image**
 
 **Using Docker**
 ```sh
-docker build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.rocky9 .
+docker build -t pgagroal:2.1.1 -f ./contrib/docker/Dockerfile.rocky9 .
 ```
 
 **Using Podman**
 
 ```sh
-podman build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.rocky9 .
+podman build -t pgagroal:2.1.1 -f ./contrib/docker/Dockerfile.rocky9 .
 ```
 
 **Step 4: Run pgagroal as a Docker Container**
@@ -105,7 +105,7 @@ docker run -d --name pgagroal \
   -p 2345:2345 \
   -p 2346:2346 \
   --add-host=host.docker.internal:host-gateway \
-  pgagroal:2.1.0
+  pgagroal:2.1.1
 ```
 
 - **Using Podman**
@@ -115,7 +115,7 @@ podman run -d --name pgagroal \
   -p 2345:2345 \
   -p 2346:2346 \
   --add-host=host.docker.internal:host-gateway \
-  pgagroal:2.1.0
+  pgagroal:2.1.1
 ```
 
 **Step 5: Verify the Container**
@@ -206,7 +206,7 @@ You can access the three binaries at `/usr/local/bin`
 * Set `ev_backend = epoll` in `pgagroal.conf` for containerized deployments.
   The default (`auto`) selects `io_uring`, which may not work in Docker Desktop
   due to kernel security restrictions.
-* Use versioned tags (e.g. `pgagroal:2.1.0`) instead of `:latest` for
+* Use versioned tags (e.g. `pgagroal:2.1.1`) instead of `:latest` for
   reproducible deployments. The `:latest` tag is available as a convenience
   but is mutable and should not be used in production.
 * For supply-chain security, consider pinning base images by digest in

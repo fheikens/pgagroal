@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1
+
+- Standardize container ports to 6432 (pooler) and 9100 (metrics)
+- Rebuild and re-validate against PostgreSQL 14, 15, 16, 17, and 18
+- Version bump: 2.1.0 used ports 2345/2346 internally
+
 ## 2.1.0
 
 - Initial public Docker Hub release

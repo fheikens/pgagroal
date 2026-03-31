@@ -68,13 +68,13 @@ See [Architecture](./doc/ARCHITECTURE.md) for the architecture of [**pgagroal**]
 docker run -d \
   -p 6432:6432 \   # pgagroal connection port (client → pooler)
   -p 9100:9100 \   # Prometheus metrics endpoint
-  elevarq/pgagroal:2.1.0
+  elevarq/pgagroal:2.1.1
 ```
 
 * `6432`: port for database clients connecting through pgagroal
 * `9100`: HTTP endpoint exposing metrics for monitoring
 
-Use a version tag such as `2.1.0` for reproducible deployments.
+Use a version tag such as `2.1.1` for reproducible deployments.
 
 ## Container notes
 
