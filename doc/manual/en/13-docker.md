@@ -19,7 +19,7 @@ metrics = 2346
 log_type = file
 log_level = debug
 log_path = /tmp/pgagroal.log
-ev_backend = auto
+ev_backend = epoll
 
 max_connections = 100
 idle_timeout = 600
@@ -72,26 +72,26 @@ There are two Dockerfiles available:
 
 **Using Docker**
 ```sh
-docker build -t pgagroal:latest -f ./contrib/docker/Dockerfile.alpine .
+docker build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.alpine .
 ```
 
 **Using Podman**
 
 ```sh
-podman build -t pgagroal:latest -f ./contrib/docker/Dockerfile.alpine .
+podman build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.alpine .
 ```
 
 2. **Rocky Linux 9-based image**
 
 **Using Docker**
 ```sh
-docker build -t pgagroal:latest -f ./contrib/docker/Dockerfile.rocky9 .
+docker build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.rocky9 .
 ```
 
 **Using Podman**
 
 ```sh
-podman build -t pgagroal:latest -f ./contrib/docker/Dockerfile.rocky9 .
+podman build -t pgagroal:2.1.0 -f ./contrib/docker/Dockerfile.rocky9 .
 ```
 
 **Step 4: Run pgagroal as a Docker Container**
@@ -105,7 +105,7 @@ docker run -d --name pgagroal \
   -p 2345:2345 \
   -p 2346:2346 \
   --add-host=host.docker.internal:host-gateway \
-  pgagroal:latest
+  pgagroal:2.1.0
 ```
 
 - **Using Podman**
@@ -115,7 +115,7 @@ podman run -d --name pgagroal \
   -p 2345:2345 \
   -p 2346:2346 \
   --add-host=host.docker.internal:host-gateway \
-  pgagroal:latest
+  pgagroal:2.1.0
 ```
 
 **Step 5: Verify the Container**
@@ -198,3 +198,17 @@ cd /etc/pgagroal
 See [this](https://github.com/pgagroal/pgagroal/blob/main/doc/manual/user-10-cli.md) for more cli commands.
 
 You can access the three binaries at `/usr/local/bin`
+
+---
+
+**Deployment notes**
+
+* Set `ev_backend = epoll` in `pgagroal.conf` for containerized deployments.
+  The default (`auto`) selects `io_uring`, which may not work in Docker Desktop
+  due to kernel security restrictions.
+* Use versioned tags (e.g. `pgagroal:2.1.0`) instead of `:latest` for
+  reproducible deployments. The `:latest` tag is available as a convenience
+  but is mutable and should not be used in production.
+* For supply-chain security, consider pinning base images by digest in
+  production Dockerfiles instead of using mutable tags like `alpine:latest`
+  or `rockylinux:9`.
