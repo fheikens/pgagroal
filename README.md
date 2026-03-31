@@ -64,23 +64,42 @@ See [Architecture](./doc/ARCHITECTURE.md) for the architecture of [**pgagroal**]
 
 ## Quick start (container)
 
+Create `pgagroal.conf`:
+
+```ini
+[pgagroal]
+host = 0.0.0.0
+port = 6432
+metrics = 9100
+unix_socket_dir = /tmp/
+ev_backend = epoll
+
+[primary]
+host = 192.168.1.100
+port = 5432
+```
+
+Change `192.168.1.100` to the IP address or hostname of your PostgreSQL server.
+
+Run the container:
+
 ```bash
 docker run -d \
-  -p 6432:6432 \   # pgagroal connection port (client → pooler)
-  -p 9100:9100 \   # Prometheus metrics endpoint
+  --name pgagroal \
+  -p 6432:6432 \
+  -p 9100:9100 \
+  -v $(pwd)/pgagroal.conf:/etc/pgagroal/pgagroal.conf:ro \
   elevarq/pgagroal:2.1.1
 ```
 
-* `6432`: port for database clients connecting through pgagroal
-* `9100`: HTTP endpoint exposing metrics for monitoring
+Connect through pgagroal:
 
-Use a version tag such as `2.1.1` for reproducible deployments.
+```bash
+psql -h localhost -p 6432 -U postgres -d postgres
+```
 
-## Container notes
-
-For containerized deployments, set `ev_backend = epoll` in `pgagroal.conf`.
-The default (`auto`) selects `io_uring`, which may not work in Docker Desktop
-due to kernel security restrictions.
+Clients connect to pgagroal on port 6432.
+pgagroal connects to PostgreSQL using the host and port configured in `pgagroal.conf`.
 
 See [Docker](./doc/manual/en/13-docker.md) for full container setup instructions.
 
