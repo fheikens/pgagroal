@@ -109,7 +109,7 @@ COPY contrib/docker/pgagroal.conf contrib/docker/pgagroal_hba.conf /etc/pgagroal
 RUN chown -R pgagroal:pgagroal /pgagroal /etc/pgagroal
 RUN chmod +x /usr/local/bin/pgagroal /usr/local/bin/pgagroal-cli /usr/local/bin/pgagroal-admin
 
-EXPOSE 2345 2346
+EXPOSE 6432 9100
 
 USER pgagroal
 

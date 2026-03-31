@@ -66,8 +66,8 @@ See [Architecture](./doc/ARCHITECTURE.md) for the architecture of [**pgagroal**]
 
 ```bash
 docker run -d \
-  -p 6432:2345 \   # pgagroal connection port (client → pooler)
-  -p 9100:2346 \   # Prometheus metrics endpoint
+  -p 6432:6432 \   # pgagroal connection port (client → pooler)
+  -p 9100:9100 \   # Prometheus metrics endpoint
   elevarq/pgagroal:2.1.0
 ```
 
